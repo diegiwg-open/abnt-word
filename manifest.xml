@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OfficeApp 
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" 
+  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" 
+  xsi:type="TaskPaneApp">
+
+  <!-- Informações Básicas do Suplemento ABNT -->
+  <Id>c4d9a1e0-7612-4cf4-9154-0549c4f828a1</Id>
+  <Version>1.0.0.0</Version>
+  <ProviderName>ABNT Assistant Brasil</ProviderName>
+  <DefaultLocale>pt-BR</DefaultLocale>
+  <DisplayName DefaultValue="Formatador ABNT Automático" />
+  <Description DefaultValue="Automatize a formatação completa de trabalhos acadêmicos (TCC, Teses, Artigos) nas normas ABNT no Microsoft Word." />
+  <IconUrl DefaultValue="https://diegiwg.chickenkiller.com/abnt/assets/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://diegiwg.chickenkiller.com/abnt/assets/icon-80.png" />
+  <SupportUrl DefaultValue="https://diegiwg.chickenkiller.com/abnt/index.html" />
+  <AppDomains>
+    <AppDomain>https://diegiwg.chickenkiller.com/abnt</AppDomain>
+  </AppDomains>
+
+  <!-- Requisitos Mínimos (Word 2021 / 2024 / 365 / Online) -->
+  <Hosts>
+    <Host Name="Document" />
+  </Hosts>
+
+  <DefaultSettings>
+    <SourceLocation DefaultValue="https://diegiwg.chickenkiller.com/abnt/index.html" />
+  </DefaultSettings>
+
+  <Permissions>ReadWriteDocument</Permissions>
+
+  <!-- Extensões de Faixa de Opções (Ribbon) e Painel de Tarefas -->
+  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
+    <Hosts>
+      <Host xsi:type="Document">
+        <DesktopFormFactor>
+          <FunctionFile resid="Taskpane.Url" />
+
+          <!-- Extensão da Faixa de Opções (Ribbon do Word) -->
+          <ExtensionPoint xsi:type="PrimaryCommandSurface">
+            <CustomTab id="TabABNT">
+              <Group id="GroupABNTMain">
+                <Label resid="GroupABNTMain.Label" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16" />
+                  <bt:Image size="32" resid="Icon.32" />
+                  <bt:Image size="80" resid="Icon.80" />
+                </Icon>
+
+                <!-- Botão Principal: Abrir Painel Completo -->
+                <Control xsi:type="Button" id="BtnOpenTaskpane">
+                  <Label resid="BtnOpenTaskpane.Label" />
+                  <Supertip>
+                    <Title resid="BtnOpenTaskpane.Label" />
+                    <Description resid="BtnOpenTaskpane.Tooltip" />
+                  </Supertip>
+                  <Icon>
+                    <bt:Image size="16" resid="Icon.16" />
+                    <bt:Image size="32" resid="Icon.32" />
+                    <bt:Image size="80" resid="Icon.80" />
+                  </Icon>
+                  <Action xsi:type="ShowTaskpane">
+                    <TaskpaneId>ABNTTaskpane</TaskpaneId>
+                    <SourceLocation resid="Taskpane.Url" />
+                  </Action>
+                </Control>
+
+              </Group>
+              <Label resid="TabABNT.Label" />
+            </CustomTab>
+          </ExtensionPoint>
+        </DesktopFormFactor>
+      </Host>
+    </Hosts>
+
+    <!-- Recursos de Recursos e URLs -->
+    <Resources>
+      <bt:Images>
+        <bt:Image id="Icon.16" DefaultValue="https://diegiwg.chickenkiller.com/abnt/assets/icon-16.png" />
+        <bt:Image id="Icon.32" DefaultValue="https://diegiwg.chickenkiller.com/abnt/assets/icon-32.png" />
+        <bt:Image id="Icon.80" DefaultValue="https://diegiwg.chickenkiller.com/abnt/assets/icon-80.png" />
+      </bt:Images>
+      <bt:Urls>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://diegiwg.chickenkiller.com/abnt/index.html" />
+      </bt:Urls>
+      <bt:ShortStrings>
+        <bt:String id="TabABNT.Label" DefaultValue="Normas ABNT" />
+        <bt:String id="GroupABNTMain.Label" DefaultValue="Formatação ABNT" />
+        <bt:String id="BtnOpenTaskpane.Label" DefaultValue="Assistente ABNT" />
+      </bt:ShortStrings>
+      <bt:LongStrings>
+        <bt:String id="BtnOpenTaskpane.Tooltip" DefaultValue="Abre o painel lateral com todas as ferramentas de formatação, auditoria, referências e modelos ABNT." />
+      </bt:LongStrings>
+    </Resources>
+  </VersionOverrides>
+</OfficeApp>

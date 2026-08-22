@@ -1,0 +1,38 @@
+{
+  "name": "word-abnt-assistant",
+  "version": "1.0.0",
+  "description": "Extensão para Microsoft Word 2021/2024 para automatização e formatação de trabalhos acadêmicos nas normas da ABNT",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "start:word": "office-addin-debugging start manifest.xml desktop --app word --no-debug",
+    "stop:word": "office-addin-debugging stop manifest.xml desktop --app word",
+    "test": "node test/run-tests.js",
+    "build:template": "node scripts/generate-template.js",
+    "validate": "npx office-addin-manifest validate manifest.xml"
+  },
+  "keywords": [
+    "word-add-in",
+    "abnt",
+    "academic-formatting",
+    "office-js",
+    "word-2021",
+    "word-2024",
+    "nbr-14724",
+    "nbr-6023",
+    "nbr-10520"
+  ],
+  "author": "Antigravity ABNT Assistant",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "docx": "^8.5.0",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "office-addin-debugging": "^6.1.2",
+    "office-addin-dev-certs": "^1.9.5",
+    "office-addin-manifest": "^2.1.6"
+  }
+}
