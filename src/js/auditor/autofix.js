@@ -45,26 +45,31 @@ export class AbntAutoFix {
    */
   static async fixHeadingDots() {
     if (wordBridge.isRealWord()) {
-      return await Word.run(async (context) => {
-        const paragraphs = context.document.body.paragraphs;
-        context.load(paragraphs, 'text');
-        await context.sync();
+      try {
+        return await Word.run(async (context) => {
+          const paragraphs = context.document.body.paragraphs;
+          context.load(paragraphs, 'text');
+          await context.sync();
 
-        let count = 0;
-        for (let i = 0; i < paragraphs.items.length; i++) {
-          const p = paragraphs.items[i];
-          const text = p.text ? p.text.trim() : '';
+          let count = 0;
+          for (let i = 0; i < paragraphs.items.length; i++) {
+            const p = paragraphs.items[i];
+            const text = p.text ? p.text.trim() : '';
 
-          if (/^\d+(\.\d+)*\.\s+/.test(text)) {
-            const newText = text.replace(/^(\d+(\.\d+)*)\.\ +/, '$1 ');
-            p.insertText(newText, 'Replace');
-            count++;
+            if (/^\d+(\.\d+)*\.\s+/.test(text)) {
+              const newText = text.replace(/^(\d+(\.\d+)*)\.\ +/, '$1 ');
+              p.insertText(newText, 'Replace');
+              count++;
+            }
           }
-        }
 
-        await context.sync();
-        return { success: true, count, message: `${count} título(s) corrigido(s)!` };
-      });
+          await context.sync();
+          return { success: true, count, message: `${count} título(s) corrigido(s)!` };
+        });
+      } catch (error) {
+        console.error('Error fixing heading dots:', error);
+        return { success: false, message: 'Erro ao corrigir títulos: ' + error.message };
+      }
     } else {
       return { success: true, count: 1, message: 'Títulos corrigidos no simulador.' };
     }

@@ -2,13 +2,45 @@
 
 Extensão e Suplemento oficial desenvolvido para o **Microsoft Word 2021**, **Word 2024**, **Word 365** e **Word na Web** para automatizar, formatar, auditar e gerar trabalhos acadêmicos (TCC, Monografias, Artigos Científicos, Dissertações e Teses) rigorosamente dentro das normas da **ABNT**.
 
+[![Download](https://img.shields.io/badge/Download-v1.0.0-blue)](https://github.com/diegiwg-open/abnt-word/archive/refs/heads/master.zip)
+[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Word](https://img.shields.io/badge/Word-2021%2F2024%2F365-orange)](https://www.microsoft.com/word)
+
 ---
 
-## ⚡ Como Usar (1 Único Script Idempotente)
+## 🚀 Instalação Rápida
 
-Basta executar o script mestre **`ABNT.ps1`** (ou dar duplo-clique no **`ABNT.bat`**). 
+### Método 1: Instalador Automático (Recomendado)
 
-Ele verifica dependências, certificados SSL, inicia o servidor local em segundo plano e abre o Microsoft Word com a aba **"Normas ABNT"** carregada automaticamente.
+1. **Baixe o projeto**:
+   ```bash
+   git clone https://github.com/diegiwg-open/abnt-word.git
+   cd abnt-word
+   ```
+
+2. **Execute o instalador**:
+   - Windows: Duplo-clique em `INSTALL.bat`
+   - Ou execute manualmente: `.\ABNT.ps1`
+
+3. **Pronto!** O Microsoft Word abrirá automaticamente com o suplemento carregado.
+
+### Método 2: Download Direto
+
+1. [Baixe o ZIP mais recente](https://github.com/diegiwg-open/abnt-word/archive/refs/heads/master.zip)
+2. Extraia o conteúdo para uma pasta
+3. Duplo-clique em `ABNT.bat`
+4. O Word abrirá com o suplemento ABNT
+
+### Requisitos
+
+- Microsoft Word 2021, 2024, 365 ou Word na Web
+- Windows 10 ou superior
+- Node.js (para desenvolvimento)
+- PowerShell (incluído no Windows)
+
+---
+
+## ⚡ Como Usar
 
 ### 1. Criar um Novo Documento:
 ```powershell
@@ -19,7 +51,71 @@ Ele verifica dependências, certificados SSL, inicia o servidor local em segundo
 ```powershell
 .\ABNT.ps1 "caminho\para\seu_trabalho.docx"
 ```
+
+### 3. Usar no Word:
+- Abra o Microsoft Word
+- Clique na aba **"Normas ABNT"** no topo
+- Escolha a funcionalidade desejada
+
 *(No Windows Explorer, você também pode simplesmente arrastar qualquer arquivo `.docx` para cima do arquivo `ABNT.bat`!)*
+
+---
+
+## 🔧 Instalação Manual
+
+Se o instalador automático não funcionar, siga estes passos:
+
+### 1. Instalar Dependências
+```bash
+npm install
+```
+
+### 2. Configurar Certificados SSL
+```bash
+npx office-addin-dev-certs install
+```
+
+### 3. Iniciar o Servidor
+```bash
+npm start
+```
+
+### 4. Carregar no Word
+- Abra o Word
+- Vá em **Arquivo > Opções > Suplementos > Trust Center**
+- Clique em **Configurações do Trust Center**
+- Em **Local do suplemento**, adicione o diretório do projeto
+- Clique em **Gerenciar Suplementos** e selecione **ABNT**
+
+---
+
+## 🛠️ Desenvolvimento
+
+### Estrutura do Projeto
+```
+abnt-word/
+├── src/
+│   ├── js/              # Lógica JavaScript
+│   │   ├── app.js      # Aplicação principal
+│   │   ├── wordApi.js  # Abstração da API do Word
+│   │   ├── auditors/   # Auditoria ABNT
+│   │   ├── formatters/ # Formatação
+│   │   ├── generators/ # Geradores de conteúdo
+│   │   └── utils/      # Utilitários
+│   ├── css/            # Estilos
+│   └── index.html      # Interface
+├── server.js           # Servidor local
+├── manifest.xml        # Manifesto do suplemento
+└── ABNT.ps1           # Script de inicialização
+```
+
+### Scripts Disponíveis
+```bash
+npm start              # Inicia o servidor local
+npm test               # Executa testes
+npm run validate       # Valida o manifesto
+npm run build:template # Gera templates
+```
 
 ---
 

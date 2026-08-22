@@ -18,31 +18,36 @@ export class HeadingsFormatter {
    * @param {string} fontName - Font name ('Arial' or 'Times New Roman')
    */
   static async formatHeadingLevel(level, fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    let headingConfig;
+    try {
+      let headingConfig;
 
-    switch (level) {
-      case 1: headingConfig = ABNT_CONSTANTS.HEADINGS.PRIMARY; break;
-      case 2: headingConfig = ABNT_CONSTANTS.HEADINGS.SECONDARY; break;
-      case 3: headingConfig = ABNT_CONSTANTS.HEADINGS.TERTIARY; break;
-      case 4: headingConfig = ABNT_CONSTANTS.HEADINGS.QUATERNARY; break;
-      case 5: headingConfig = ABNT_CONSTANTS.HEADINGS.QUINARY; break;
-      default: headingConfig = ABNT_CONSTANTS.HEADINGS.PRIMARY;
+      switch (level) {
+        case 1: headingConfig = ABNT_CONSTANTS.HEADINGS.PRIMARY; break;
+        case 2: headingConfig = ABNT_CONSTANTS.HEADINGS.SECONDARY; break;
+        case 3: headingConfig = ABNT_CONSTANTS.HEADINGS.TERTIARY; break;
+        case 4: headingConfig = ABNT_CONSTANTS.HEADINGS.QUATERNARY; break;
+        case 5: headingConfig = ABNT_CONSTANTS.HEADINGS.QUINARY; break;
+        default: headingConfig = ABNT_CONSTANTS.HEADINGS.PRIMARY;
+      }
+
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: headingConfig.size, // Always 12pt in ABNT
+        bold: headingConfig.bold,
+        italic: headingConfig.italic,
+        alignment: ABNT_CONSTANTS.ALIGNMENT.LEFT,
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.BODY, // 1.5
+        firstLineIndent: 0,
+        leftIndent: 0,
+        rightIndent: 0,
+        spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_BEFORE_PT, // 12 pt
+        spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_AFTER_PT,   // 12 pt
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting heading level:', error);
+      return { success: false, error: error.message };
     }
-
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: headingConfig.size, // Always 12pt in ABNT
-      bold: headingConfig.bold,
-      italic: headingConfig.italic,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.LEFT,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.BODY, // 1.5
-      firstLineIndent: 0,
-      leftIndent: 0,
-      rightIndent: 0,
-      spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_BEFORE_PT, // 12 pt
-      spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_AFTER_PT,   // 12 pt
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
   }
 
   /**

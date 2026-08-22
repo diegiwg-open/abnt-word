@@ -70,7 +70,7 @@ export const ABNT_CONSTANTS = {
     REFERENCE_AFTER_PT: 6, // 1 single space between references
   },
 
-  // Text Alignment
+  // Text Alignment (Word API values)
   ALIGNMENT: {
     JUSTIFIED: 'Justified',
     LEFT: 'Left',

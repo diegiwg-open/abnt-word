@@ -35,10 +35,11 @@ if (typeof Office !== 'undefined') {
       console.log('Office.onReady fired for host:', info.host);
       if (info.host === Office.HostType.Word) {
         updateConnectionStatus(true);
+        setTimeout(runInitialAudit, 500);
       } else {
         updateConnectionStatus(false);
+        setTimeout(runInitialAudit, 500);
       }
-      setTimeout(runInitialAudit, 500);
     });
   }
 }
@@ -77,9 +78,11 @@ function updateConnectionStatus(isWordReal) {
   if (isWordReal) {
     pill.className = 'status-pill online';
     text.textContent = 'Microsoft Word Conectado';
+    console.log('✅ Conexão com Word estabelecida');
   } else {
     pill.className = 'status-pill mock';
     text.textContent = 'Modo Simulador Navegador';
+    console.log('⚠️ Operando em modo simulador (sem Word conectado)');
   }
 }
 
@@ -131,7 +134,6 @@ function initTheme() {
     const newTheme = appState.isDarkTheme ? 'dark' : 'light';
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('abnt_theme', newTheme);
-    showToast(`Tema ${newTheme === 'dark' ? 'Escuro' : 'Claro'} ativado!`, 'info');
   });
 }
 
@@ -148,14 +150,12 @@ function initEventListeners() {
       fontChoiceArial.classList.add('selected');
       fontChoiceTimes.classList.remove('selected');
       appState.selectedFont = ABNT_CONSTANTS.FONTS.ARIAL;
-      showToast('Fonte padrão definida como Arial', 'info');
     });
 
     fontChoiceTimes.addEventListener('click', () => {
       fontChoiceTimes.classList.add('selected');
       fontChoiceArial.classList.remove('selected');
       appState.selectedFont = ABNT_CONSTANTS.FONTS.TIMES;
-      showToast('Fonte padrão definida como Times New Roman', 'info');
     });
   }
 
@@ -169,13 +169,14 @@ function initEventListeners() {
       try {
         const result = await GeneralFormatter.formatFullDocument({ fontName: appState.selectedFont });
         if (result.success) {
-          showToast(result.message, 'success');
           runInitialAudit();
         } else {
-          showToast('Erro ao formatar: ' + result.error, 'error');
+          showToast('Erro ao formatar: ' + (result.error || 'Erro desconhecido'), 'error');
+          console.error('Format error:', result);
         }
       } catch (e) {
         showToast('Erro inesperado: ' + e.message, 'error');
+        console.error('Unexpected error:', e);
       } finally {
         btnFormatFullDoc.disabled = false;
         btnFormatFullDoc.innerHTML = '<span class="icon-sparkle">✨</span><span>Formatar Documento Inteiro (ABNT)</span>';
@@ -189,7 +190,6 @@ function initEventListeners() {
     btnMarginsOnly.addEventListener('click', async () => {
       const res = await GeneralFormatter.applyMarginsOnly();
       if (res.success) {
-        showToast(res.message, 'success');
         runInitialAudit();
       } else {
         showToast(res.error, 'error');
@@ -214,8 +214,16 @@ function initEventListeners() {
     const el = document.getElementById(id);
     if (el) {
       el.addEventListener('click', async () => {
-        await fn();
-        showToast(msg, 'success');
+        try {
+          const result = await fn();
+          if (result && result.success === false) {
+            showToast('Erro ao aplicar estilo: ' + (result.error || 'Erro desconhecido'), 'error');
+            console.error('Style error:', result);
+          }
+        } catch (error) {
+          showToast('Erro inesperado: ' + error.message, 'error');
+          console.error('Unexpected style error:', error);
+        }
       });
     }
   });
@@ -224,7 +232,9 @@ function initEventListeners() {
   if (btnFixHeadingNumbers) {
     btnFixHeadingNumbers.addEventListener('click', async () => {
       const res = await AbntAutoFix.executeFix('fix_heading_dots');
-      showToast(res.message || 'Numeração de títulos ajustada!', 'success');
+      if (!res.success) {
+        showToast(res.message || 'Erro ao ajustar numeração', 'error');
+      }
     });
   }
 
@@ -232,9 +242,21 @@ function initEventListeners() {
   const btnFixAllIssues = document.getElementById('btnFixAllIssues');
   if (btnFixAllIssues) {
     btnFixAllIssues.addEventListener('click', async () => {
-      await AbntAutoFix.executeFix('fix_all', { fontName: appState.selectedFont });
-      showToast('Todos os erros foram corrigidos automaticamente!', 'success');
-      runInitialAudit();
+      btnFixAllIssues.disabled = true;
+      btnFixAllIssues.innerHTML = '<span>⏳ Corrigindo...</span>';
+      try {
+        const result = await AbntAutoFix.executeFix('fix_all', { fontName: appState.selectedFont });
+        if (result.success) {
+          runInitialAudit();
+        } else {
+          showToast('Erro ao corrigir: ' + (result.message || 'Erro desconhecido'), 'error');
+        }
+      } catch (error) {
+        showToast('Erro inesperado: ' + error.message, 'error');
+      } finally {
+        btnFixAllIssues.disabled = false;
+        btnFixAllIssues.innerHTML = '<span>⚡ Corrigir Todos os Erros</span>';
+      }
     });
   }
 
@@ -269,18 +291,24 @@ function initEventListeners() {
   const btnInsertCitation = document.getElementById('btnInsertCitation');
   if (btnInsertCitation) {
     btnInsertCitation.addEventListener('click', async () => {
-      const citationText = document.getElementById('previewCitationText')?.textContent || '';
-      await wordBridge.insertText(citationText, 'Selection');
-      showToast('Citação inserida no documento!', 'success');
+      try {
+        const citationText = document.getElementById('previewCitationText')?.textContent || '';
+        await wordBridge.insertText(citationText, 'Selection');
+      } catch (error) {
+        showToast('Erro ao inserir citação: ' + error.message, 'error');
+      }
     });
   }
 
   const btnInsertReference = document.getElementById('btnInsertReference');
   if (btnInsertReference) {
     btnInsertReference.addEventListener('click', async () => {
-      const refText = document.getElementById('previewReferenceText')?.innerText || '';
-      await wordBridge.insertText(refText, 'Selection');
-      showToast('Referência bibliográfica inserida!', 'success');
+      try {
+        const refText = document.getElementById('previewReferenceText')?.innerText || '';
+        await wordBridge.insertText(refText, 'Selection');
+      } catch (error) {
+        showToast('Erro ao inserir referência: ' + error.message, 'error');
+      }
     });
   }
 
@@ -288,9 +316,7 @@ function initEventListeners() {
   if (btnSortReferences) {
     btnSortReferences.addEventListener('click', async () => {
       const res = await ReferencesFormatter.sortSelectedReferences();
-      if (res.success) {
-        showToast('Referências ordenadas em ordem alfabética (A-Z)!', 'success');
-      } else {
+      if (!res.success) {
         showToast(res.message || 'Falha ao ordenar referências.', 'error');
       }
     });
@@ -300,9 +326,12 @@ function initEventListeners() {
   const templateBtns = document.querySelectorAll('.template-insert-btn');
   templateBtns.forEach((btn) => {
     btn.addEventListener('click', async () => {
-      const templateType = btn.getAttribute('data-template');
-      await TemplateGenerator.insertTemplateIntoDocument(templateType);
-      showToast(`Modelo de ${templateType.toUpperCase()} inserido!`, 'success');
+      try {
+        const templateType = btn.getAttribute('data-template');
+        await TemplateGenerator.insertTemplateIntoDocument(templateType);
+      } catch (error) {
+        showToast('Erro ao inserir modelo: ' + error.message, 'error');
+      }
     });
   });
 
@@ -311,7 +340,9 @@ function initEventListeners() {
   if (btnCleanSpaces) {
     btnCleanSpaces.addEventListener('click', async () => {
       const res = await CleanerFormatter.cleanDocument();
-      showToast(res.message || 'Higienização concluída!', 'success');
+      if (!res.success) {
+        showToast(res.message || 'Erro na higienização', 'error');
+      }
       runInitialAudit();
     });
   }
@@ -320,7 +351,9 @@ function initEventListeners() {
   if (btnFixHeadingDotsCleaner) {
     btnFixHeadingDotsCleaner.addEventListener('click', async () => {
       const res = await AbntAutoFix.executeFix('fix_heading_dots');
-      showToast(res.message || 'Títulos padronizados!', 'success');
+      if (!res.success) {
+        showToast(res.message || 'Erro ao padronizar títulos', 'error');
+      }
       runInitialAudit();
     });
   }
@@ -395,13 +428,16 @@ function updateCitationAndRefPreview() {
  */
 async function runInitialAudit() {
   try {
+    console.log('🔄 Iniciando verificação do documento...');
     const audit = await AbntLinter.auditDocument();
     if (audit) {
       appState.lastAuditResult = audit;
       renderAuditResults(audit);
+      console.log('📋 Resultados da auditoria atualizados na interface');
     }
   } catch (error) {
-    console.error('Audit error:', error);
+    console.error('❌ Erro ao executar auditoria:', error);
+    showToast('Erro ao analisar documento: ' + error.message, 'error');
   }
 }
 
@@ -478,7 +514,9 @@ function renderAuditResults(audit) {
       btnFix.disabled = true;
       btnFix.textContent = 'Ajustando...';
       const fixResult = await AbntAutoFix.executeFix(issue.fixAction, { fontName: appState.selectedFont });
-      showToast(fixResult.message || 'Item corrigido com sucesso!', 'success');
+      if (!fixResult.success) {
+        showToast(fixResult.message || 'Erro ao corrigir item', 'error');
+      }
       runInitialAudit();
     });
 
@@ -509,5 +547,5 @@ function showToast(message, type = 'info') {
         toast.parentNode.removeChild(toast);
       }
     }, 300);
-  }, 3500);
+  }, 5000);
 }

@@ -16,29 +16,40 @@ export class WordBridge {
    * Returns true when running inside the real Microsoft Word host
    */
   isRealWord() {
-    return (
-      typeof Office !== 'undefined' &&
-      typeof Word !== 'undefined' &&
-      Office.context != null &&
-      Office.context.requirements != null
-    );
+    try {
+      return (
+        typeof Office !== 'undefined' &&
+        typeof Word !== 'undefined' &&
+        Office.context != null &&
+        Office.context.requirements != null &&
+        Word.run !== undefined
+      );
+    } catch (error) {
+      console.error('Error checking Word connection:', error);
+      return false;
+    }
   }
 
   /**
    * Applies official ABNT margins to the document (NBR 14724)
-   * Uses body.pageSetup directly – the most reliable path in Word JS API.
+   * Uses document.pageSetup according to official Word JS API documentation.
    */
   async applyAbntMargins() {
     if (this.isRealWord()) {
-      return await Word.run(async (context) => {
-        const pageSetup = context.document.body.pageSetup;
-        pageSetup.topMargin    = ABNT_CONSTANTS.MARGINS.TOP_PT;
-        pageSetup.leftMargin   = ABNT_CONSTANTS.MARGINS.LEFT_PT;
-        pageSetup.bottomMargin = ABNT_CONSTANTS.MARGINS.BOTTOM_PT;
-        pageSetup.rightMargin  = ABNT_CONSTANTS.MARGINS.RIGHT_PT;
-        await context.sync();
-        return { success: true, count: 1 };
-      });
+      try {
+        return await Word.run(async (context) => {
+          const pageSetup = context.document.pageSetup;
+          pageSetup.topMargin    = ABNT_CONSTANTS.MARGINS.TOP_PT;
+          pageSetup.leftMargin   = ABNT_CONSTANTS.MARGINS.LEFT_PT;
+          pageSetup.bottomMargin = ABNT_CONSTANTS.MARGINS.BOTTOM_PT;
+          pageSetup.rightMargin  = ABNT_CONSTANTS.MARGINS.RIGHT_PT;
+          await context.sync();
+          return { success: true, count: 1 };
+        });
+      } catch (error) {
+        console.error('Error applying margins:', error);
+        return { success: false, error: error.message };
+      }
     } else {
       mockDocInstance.sections.forEach((sec) => {
         sec.pageSetup.topMargin    = ABNT_CONSTANTS.MARGINS.TOP_PT;
@@ -66,82 +77,91 @@ export class WordBridge {
         : ABNT_CONSTANTS.INDENTATION.FIRST_LINE_PT;
 
     if (this.isRealWord()) {
-      return await Word.run(async (context) => {
-        // --- Pass 1: Apply margins via body.pageSetup (reliable path) ---
-        const pageSetup = context.document.body.pageSetup;
-        pageSetup.topMargin    = ABNT_CONSTANTS.MARGINS.TOP_PT;
-        pageSetup.leftMargin   = ABNT_CONSTANTS.MARGINS.LEFT_PT;
-        pageSetup.bottomMargin = ABNT_CONSTANTS.MARGINS.BOTTOM_PT;
-        pageSetup.rightMargin  = ABNT_CONSTANTS.MARGINS.RIGHT_PT;
+      try {
+        return await Word.run(async (context) => {
+          // --- Pass 1: Apply margins via document.pageSetup (correct API path) ---
+          const pageSetup = context.document.pageSetup;
+          pageSetup.topMargin    = ABNT_CONSTANTS.MARGINS.TOP_PT;
+          pageSetup.leftMargin   = ABNT_CONSTANTS.MARGINS.LEFT_PT;
+          pageSetup.bottomMargin = ABNT_CONSTANTS.MARGINS.BOTTOM_PT;
+          pageSetup.rightMargin  = ABNT_CONSTANTS.MARGINS.RIGHT_PT;
 
-        // --- Pass 2: Load paragraphs (text + style for classification) ---
-        const paragraphs = context.document.body.paragraphs;
-        context.load(paragraphs, 'text,style,leftIndent');
-        await context.sync();
+          // --- Pass 2: Load paragraphs (text + style for classification) ---
+          const paragraphs = context.document.body.paragraphs;
+          context.load(paragraphs, 'text,style,leftIndent');
+          await context.sync();
 
-        let formattedCount = 0;
+          let formattedCount = 0;
 
-        for (let i = 0; i < paragraphs.items.length; i++) {
-          const p    = paragraphs.items[i];
-          const text = (p.text || '').trim();
-          if (!text) continue;
+          // Set default font for the entire body (works even for empty documents)
+          context.document.body.font.name = fontName;
+          context.document.body.font.size = bodyFontSize;
+          context.document.body.font.color = ABNT_CONSTANTS.FONTS.COLOR_BLACK;
 
-          const styleLower = (p.style || '').toLowerCase();
-          const isHeading =
-            styleLower.includes('heading') ||
-            styleLower.includes('título') ||
-            /^\d+(\.\d+)*\s+[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ]/.test(text);
+          for (let i = 0; i < paragraphs.items.length; i++) {
+            const p    = paragraphs.items[i];
+            const text = (p.text || '').trim();
 
-          const isLongQuote = (p.leftIndent || 0) >= 100;
-          const isReference =
-            text.includes('NBR ') ||
-            (/^[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s]{3,},\s+[A-Z]/.test(text) && text.length > 50);
+            const styleLower = (p.style || '').toLowerCase();
+            const isHeading =
+              styleLower.includes('heading') ||
+              styleLower.includes('título') ||
+              (text && /^\d+(\.\d+)*\s+[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ]/.test(text));
 
-          // Set font (writing – no load required)
-          p.font.name  = fontName;
-          p.font.color = ABNT_CONSTANTS.FONTS.COLOR_BLACK;
-          p.font.bold  = isHeading ? true : false;
+            const isLongQuote = (p.leftIndent || 0) >= 100;
+            const isReference =
+              text.includes('NBR ') ||
+              (/^[A-ZÁÉÍÓÚÀÂÊÔÃÕÇ\s]{3,},\s+[A-Z]/.test(text) && text.length > 50);
 
-          if (isHeading) {
-            p.font.size      = bodyFontSize;
-            p.alignment      = 'Left';
-            p.firstLineIndent = 0;
-            p.lineSpacing    = lineSpacing * 12;
-            p.spaceBefore    = ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_BEFORE_PT;
-            p.spaceAfter     = ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_AFTER_PT;
-          } else if (isLongQuote) {
-            p.font.size      = ABNT_CONSTANTS.FONTS.SIZES.LONG_CITATION;
-            p.leftIndent     = ABNT_CONSTANTS.INDENTATION.LONG_CITATION_LEFT_PT;
-            p.firstLineIndent = 0;
-            p.lineSpacing    = 12; // single
-            p.alignment      = 'Justified';
-            p.spaceBefore    = 6;
-            p.spaceAfter     = 6;
-          } else if (isReference) {
-            p.font.size      = bodyFontSize;
-            p.leftIndent     = 0;
-            p.firstLineIndent = 0;
-            p.lineSpacing    = 12; // single
-            p.alignment      = 'Left';
-            p.spaceBefore    = 0;
-            p.spaceAfter     = 6;
-          } else {
-            // Standard body text
-            p.font.size      = bodyFontSize;
-            p.lineSpacing    = lineSpacing * 12; // 18pt
-            p.alignment      = 'Justified';
-            p.leftIndent     = 0;
-            p.firstLineIndent = firstLineIndent; // 35.43pt = 1.25cm
-            p.spaceBefore    = 0;
-            p.spaceAfter     = 0;
+            // Set font (writing – no load required)
+            p.font.name  = fontName;
+            p.font.color = ABNT_CONSTANTS.FONTS.COLOR_BLACK;
+            p.font.bold  = isHeading ? true : false;
+
+            if (isHeading) {
+              p.font.size      = bodyFontSize;
+              p.alignment      = 'Left';
+              p.firstLineIndent = 0;
+              p.lineSpacing    = lineSpacing * 12;
+              p.spaceBefore    = ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_BEFORE_PT;
+              p.spaceAfter     = ABNT_CONSTANTS.PARAGRAPH_SPACING.HEADING_AFTER_PT;
+            } else if (isLongQuote) {
+              p.font.size      = ABNT_CONSTANTS.FONTS.SIZES.LONG_CITATION;
+              p.leftIndent     = ABNT_CONSTANTS.INDENTATION.LONG_CITATION_LEFT_PT;
+              p.firstLineIndent = 0;
+              p.lineSpacing    = 12; // single
+              p.alignment      = 'Justified';
+              p.spaceBefore    = 6;
+              p.spaceAfter     = 6;
+            } else if (isReference) {
+              p.font.size      = bodyFontSize;
+              p.leftIndent     = 0;
+              p.firstLineIndent = 0;
+              p.lineSpacing    = 12; // single
+              p.alignment      = 'Left';
+              p.spaceBefore    = 0;
+              p.spaceAfter     = 6;
+            } else {
+              // Standard body text (applies even to empty paragraphs)
+              p.font.size      = bodyFontSize;
+              p.lineSpacing    = lineSpacing * 12; // 18pt
+              p.alignment      = 'Justified';
+              p.leftIndent     = 0;
+              p.firstLineIndent = firstLineIndent; // 35.43pt = 1.25cm
+              p.spaceBefore    = 0;
+              p.spaceAfter     = 0;
+            }
+
+            formattedCount++;
           }
 
-          formattedCount++;
-        }
-
-        await context.sync();
-        return { success: true, count: formattedCount };
-      });
+          await context.sync();
+          return { success: true, count: formattedCount };
+        });
+      } catch (error) {
+        console.error('Error formatting document:', error);
+        return { success: false, error: error.message };
+      }
     } else {
       // Mock fallback
       mockDocInstance.sections.forEach((sec) => {
@@ -251,48 +271,71 @@ export class WordBridge {
    */
   async scanDocument() {
     if (this.isRealWord()) {
-      return await Word.run(async (context) => {
-        // --- Pass 1: Load page setup ---
-        const pageSetup = context.document.body.pageSetup;
-        context.load(pageSetup, 'topMargin,leftMargin,bottomMargin,rightMargin');
+      try {
+        return await Word.run(async (context) => {
+          // --- Pass 1: Load page setup from document (correct API path) ---
+          const pageSetup = context.document.pageSetup;
+          context.load(pageSetup, 'topMargin,leftMargin,bottomMargin,rightMargin');
 
-        // Load paragraph scalar properties (no nested font yet)
-        const paragraphs = context.document.body.paragraphs;
-        context.load(paragraphs, 'text,alignment,lineSpacing,firstLineIndent,leftIndent,spaceBefore,spaceAfter,style');
-        await context.sync();
+          // Load paragraph scalar properties (no nested font yet)
+          const paragraphs = context.document.body.paragraphs;
+          context.load(paragraphs, 'text,alignment,lineSpacing,firstLineIndent,leftIndent,spaceBefore,spaceAfter,style');
+          await context.sync();
 
-        // --- Pass 2: Load font properties for each paragraph ---
-        paragraphs.items.forEach((p) => {
-          context.load(p.font, 'name,size,bold,italic,color');
+          // --- Pass 2: Load font properties for each paragraph ---
+          paragraphs.items.forEach((p) => {
+            context.load(p.font, 'name,size,bold,italic,color');
+          });
+          await context.sync();
+
+          // Build section summary from document.pageSetup
+          const sectionData = [{
+            topMargin:    pageSetup.topMargin,
+            leftMargin:   pageSetup.leftMargin,
+            bottomMargin: pageSetup.bottomMargin,
+            rightMargin:  pageSetup.rightMargin,
+          }];
+
+          const paragraphData = paragraphs.items.map((p) => ({
+            text:           p.text || '',
+            fontName:       (p.font && p.font.name)  || 'Unknown',
+            fontSize:       (p.font && p.font.size)  || 12,
+            bold:           (p.font && p.font.bold)  || false,
+            italic:         (p.font && p.font.italic)|| false,
+            color:          (p.font && p.font.color) || '#000000',
+            lineSpacing:    p.lineSpacing    || 18,
+            firstLineIndent:p.firstLineIndent|| 0,
+            leftIndent:     p.leftIndent     || 0,
+            alignment:      p.alignment      || 'Justified',
+            spaceBefore:    p.spaceBefore    || 0,
+            spaceAfter:     p.spaceAfter     || 0,
+            style:          p.style          || 'Normal',
+          }));
+
+          return { sections: sectionData, paragraphs: paragraphData };
         });
-        await context.sync();
-
-        // Build section summary from body.pageSetup
-        const sectionData = [{
-          topMargin:    pageSetup.topMargin,
-          leftMargin:   pageSetup.leftMargin,
-          bottomMargin: pageSetup.bottomMargin,
-          rightMargin:  pageSetup.rightMargin,
-        }];
-
-        const paragraphData = paragraphs.items.map((p) => ({
-          text:           p.text || '',
-          fontName:       (p.font && p.font.name)  || 'Unknown',
-          fontSize:       (p.font && p.font.size)  || 12,
-          bold:           (p.font && p.font.bold)  || false,
-          italic:         (p.font && p.font.italic)|| false,
-          color:          (p.font && p.font.color) || '#000000',
-          lineSpacing:    p.lineSpacing    || 18,
-          firstLineIndent:p.firstLineIndent|| 0,
-          leftIndent:     p.leftIndent     || 0,
-          alignment:      p.alignment      || 'Justified',
-          spaceBefore:    p.spaceBefore    || 0,
-          spaceAfter:     p.spaceAfter     || 0,
-          style:          p.style          || 'Normal',
-        }));
-
-        return { sections: sectionData, paragraphs: paragraphData };
-      });
+      } catch (error) {
+        console.error('Error scanning document:', error);
+        // Fallback to mock if scan fails
+        return {
+          sections: mockDocInstance.sections.map((s) => ({ ...s.pageSetup })),
+          paragraphs: mockDocInstance.paragraphs.map((p) => ({
+            text:           p.text,
+            fontName:       p.font.name,
+            fontSize:       p.font.size,
+            bold:           p.font.bold,
+            italic:         p.font.italic,
+            color:          p.font.color,
+            lineSpacing:    p.lineSpacing ? p.lineSpacing * 12 : 18,
+            firstLineIndent:p.firstLineIndent,
+            leftIndent:     p.leftIndent || 0,
+            alignment:      p.alignment,
+            spaceBefore:    p.spaceBefore,
+            spaceAfter:     p.spaceAfter,
+            style:          p.isHeading ? `Heading ${p.headingLevel || 1}` : 'Normal',
+          })),
+        };
+      }
     } else {
       return {
         sections: mockDocInstance.sections.map((s) => ({ ...s.pageSetup })),

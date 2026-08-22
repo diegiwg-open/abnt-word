@@ -14,10 +14,14 @@ export class AbntLinter {
    */
   static async auditDocument() {
     try {
+      console.log('🔍 Iniciando auditoria do documento...');
       const docData = await wordBridge.scanDocument();
-      return this.analyzeDocument(docData);
+      console.log('📊 Dados do documento obtidos:', docData);
+      const result = this.analyzeDocument(docData);
+      console.log('✅ Auditoria concluída:', result);
+      return result;
     } catch (error) {
-      console.error('Error auditing document:', error);
+      console.error('❌ Erro na auditoria do documento:', error);
       return {
         score: 0,
         status: 'error',
@@ -81,7 +85,7 @@ export class AbntLinter {
       // Font usage tracking
       const font = p.fontName || 'Unknown';
       fontUsage[font] = (fontUsage[font] || 0) + 1;
-      const isAllowedFont = font.includes('Arial') || font.includes('Times');
+      const isAllowedFont = font.toLowerCase().includes('arial') || font.toLowerCase().includes('times new roman');
       if (!isAllowedFont) nonAbntFontCount++;
 
       // Heading with erroneous dot (e.g. "1. INTRODUÇÃO")

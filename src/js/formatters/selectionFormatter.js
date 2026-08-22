@@ -12,20 +12,25 @@ export class SelectionFormatter {
    * - 12pt font, 1.5 line spacing, 1.25 cm first-line indent, Justified, 0pt before/after
    */
   static async formatBodyText(fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: ABNT_CONSTANTS.FONTS.SIZES.BODY,
-      bold: false,
-      italic: false,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.JUSTIFIED,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.BODY, // 1.5
-      firstLineIndent: ABNT_CONSTANTS.INDENTATION.FIRST_LINE_PT, // 1.25 cm
-      leftIndent: 0,
-      rightIndent: 0,
-      spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.BODY_BEFORE_PT,
-      spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.BODY_AFTER_PT,
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
+    try {
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: ABNT_CONSTANTS.FONTS.SIZES.BODY,
+        bold: false,
+        italic: false,
+        alignment: 'Justified', // Word API enum value
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.BODY, // 1.5
+        firstLineIndent: ABNT_CONSTANTS.INDENTATION.FIRST_LINE_PT, // 1.25 cm
+        leftIndent: 0,
+        rightIndent: 0,
+        spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.BODY_BEFORE_PT,
+        spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.BODY_AFTER_PT,
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting body text:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   /**
@@ -38,20 +43,25 @@ export class SelectionFormatter {
    * - 6pt space before and after
    */
   static async formatLongCitation(fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: ABNT_CONSTANTS.FONTS.SIZES.LONG_CITATION, // 10 pt
-      bold: false,
-      italic: false,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.JUSTIFIED,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE, // 1.0 (single)
-      firstLineIndent: 0,
-      leftIndent: ABNT_CONSTANTS.INDENTATION.LONG_CITATION_LEFT_PT, // 4.0 cm (113.39 pt)
-      rightIndent: 0,
-      spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.LONG_CITATION_BEFORE_PT, // 6 pt
-      spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.LONG_CITATION_AFTER_PT,   // 6 pt
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
+    try {
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: ABNT_CONSTANTS.FONTS.SIZES.LONG_CITATION, // 10 pt
+        bold: false,
+        italic: false,
+        alignment: 'Justified', // Word API enum value
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE, // 1.0 (single)
+        firstLineIndent: 0,
+        leftIndent: ABNT_CONSTANTS.INDENTATION.LONG_CITATION_LEFT_PT, // 4.0 cm (113.39 pt)
+        rightIndent: 0,
+        spaceBefore: ABNT_CONSTANTS.PARAGRAPH_SPACING.LONG_CITATION_BEFORE_PT, // 6 pt
+        spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.LONG_CITATION_AFTER_PT,   // 6 pt
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting long citation:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   /**
@@ -59,20 +69,25 @@ export class SelectionFormatter {
    * - 10pt, Centered, Single line spacing
    */
   static async formatCaption(fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: ABNT_CONSTANTS.FONTS.SIZES.CAPTION, // 10 pt
-      bold: false,
-      italic: false,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.CENTERED,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
-      firstLineIndent: 0,
-      leftIndent: 0,
-      rightIndent: 0,
-      spaceBefore: 6,
-      spaceAfter: 3,
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
+    try {
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: ABNT_CONSTANTS.FONTS.SIZES.CAPTION, // 10 pt
+        bold: false,
+        italic: false,
+        alignment: 'Centered', // Word API enum value
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
+        firstLineIndent: 0,
+        leftIndent: 0,
+        rightIndent: 0,
+        spaceBefore: 6,
+        spaceAfter: 3,
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting caption:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   /**
@@ -80,20 +95,25 @@ export class SelectionFormatter {
    * - 10pt, Left-aligned, Single line spacing
    */
   static async formatFootnoteOrSource(fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: ABNT_CONSTANTS.FONTS.SIZES.FOOTNOTE, // 10 pt
-      bold: false,
-      italic: false,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.LEFT,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
-      firstLineIndent: 0,
-      leftIndent: 0,
-      rightIndent: 0,
-      spaceBefore: 3,
-      spaceAfter: 6,
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
+    try {
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: ABNT_CONSTANTS.FONTS.SIZES.FOOTNOTE, // 10 pt
+        bold: false,
+        italic: false,
+        alignment: 'Left', // Word API enum value
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
+        firstLineIndent: 0,
+        leftIndent: 0,
+        rightIndent: 0,
+        spaceBefore: 3,
+        spaceAfter: 6,
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting footnote:', error);
+      return { success: false, error: error.message };
+    }
   }
 
   /**
@@ -101,19 +121,24 @@ export class SelectionFormatter {
    * - 12pt, Left-aligned, Single line spacing, 6pt after
    */
   static async formatReferenceItem(fontName = ABNT_CONSTANTS.FONTS.ARIAL) {
-    return await wordBridge.formatSelection({
-      fontName: fontName,
-      fontSize: ABNT_CONSTANTS.FONTS.SIZES.BODY,
-      bold: false,
-      italic: false,
-      alignment: ABNT_CONSTANTS.ALIGNMENT.LEFT,
-      lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
-      firstLineIndent: 0,
-      leftIndent: 0,
-      rightIndent: 0,
-      spaceBefore: 0,
-      spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.REFERENCE_AFTER_PT, // 6 pt
-      color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
-    });
+    try {
+      return await wordBridge.formatSelection({
+        fontName: fontName,
+        fontSize: ABNT_CONSTANTS.FONTS.SIZES.BODY,
+        bold: false,
+        italic: false,
+        alignment: 'Left', // Word API enum value
+        lineSpacing: ABNT_CONSTANTS.LINE_SPACING.SINGLE,
+        firstLineIndent: 0,
+        leftIndent: 0,
+        rightIndent: 0,
+        spaceBefore: 0,
+        spaceAfter: ABNT_CONSTANTS.PARAGRAPH_SPACING.REFERENCE_AFTER_PT, // 6 pt
+        color: ABNT_CONSTANTS.FONTS.COLOR_BLACK,
+      });
+    } catch (error) {
+      console.error('Error formatting reference:', error);
+      return { success: false, error: error.message };
+    }
   }
 }

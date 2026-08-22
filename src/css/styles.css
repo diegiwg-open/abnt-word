@@ -271,3 +271,103 @@ body {
 .status-pill.mock .status-dot {
   background-color: var(--accent-amber);
 }
+
+/* Responsividade para telas menores */
+@media (max-width: 480px) {
+  .app-container {
+    padding-bottom: 16px;
+  }
+
+  .app-header {
+    padding: 10px 12px;
+  }
+
+  .brand-logo {
+    width: 24px;
+    height: 24px;
+    font-size: 12px;
+  }
+
+  .brand-title {
+    font-size: 13px;
+  }
+
+  .brand-subtitle {
+    font-size: 10px;
+  }
+
+  .nav-tabs {
+    gap: 2px;
+  }
+
+  .tab-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .tab-content {
+    padding: 12px;
+  }
+
+  .card {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-title {
+    font-size: 12px;
+  }
+
+  .card-desc {
+    font-size: 11px;
+  }
+
+  .btn-hero {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .quick-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .audit-score-card {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .score-circle {
+    width: 60px;
+    height: 60px;
+    font-size: 18px;
+  }
+
+  .form-group {
+    margin-bottom: 8px;
+  }
+
+  .form-input, .form-select {
+    padding: 7px 9px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .nav-tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    flex: 1 1 auto;
+    min-width: 60px;
+  }
+
+  .btn-hero {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+}
