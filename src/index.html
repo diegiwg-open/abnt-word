@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Formatador ABNT Automático - Microsoft Word</title>
+  
+  <!-- Office.js SDK Oficial para Microsoft Word -->
+  <script src="https://appsforoffice.microsoft.com/lib/1.1/hosted/office.js"></script>
+
+  <!-- Estilos da Aplicação -->
+  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Cabeçalho Principal -->
+    <header class="app-header">
+      <div class="header-top">
+        <div class="brand-badge">
+          <div class="brand-logo">A</div>
+          <div>
+            <div class="brand-title">Formatador ABNT</div>
+            <div class="brand-subtitle">Word 2021 / 2024 / 365</div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="themeToggleBtn" class="icon-btn" title="Alternar Tema Claro / Escuro">🌓</button>
+          <button id="refreshDocBtn" class="icon-btn" title="Atualizar / Reanalisar Documento">🔄</button>
+        </div>
+      </div>
+
+      <!-- Barra de Abas de Navegação -->
+      <div class="nav-tabs-wrapper">
+        <nav class="nav-tabs" role="tablist">
+          <button class="tab-btn active" data-tab="tab-home" id="nav-tab-home">🚀 1-Clique</button>
+          <button class="tab-btn" data-tab="tab-auditor" id="nav-tab-auditor">🔍 Auditor</button>
+          <button class="tab-btn" data-tab="tab-quick" id="nav-tab-quick">📐 Formatar</button>
+          <button class="tab-btn" data-tab="tab-references" id="nav-tab-references">📚 Citações</button>
+          <button class="tab-btn" data-tab="tab-elements" id="nav-tab-elements">📑 Modelos</button>
+          <button class="tab-btn" data-tab="tab-cleaner" id="nav-tab-cleaner">🧹 Limpar</button>
+          <button class="tab-btn" data-tab="tab-guide" id="nav-tab-guide">ℹ️ Normas</button>
+        </nav>
+      </div>
+    </header>
+
+    <!-- STATUS DE CONEXÃO -->
+    <div style="padding: 12px 16px 0 16px;">
+      <div id="connectionStatusPill" class="status-pill mock">
+        <span class="status-dot"></span>
+        <span id="connectionStatusText">Modo Simulador Navegador</span>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- ABA 1: INÍCIO / 1-CLIQUE                   -->
+    <!-- ========================================== -->
+    <main id="tab-home" class="tab-content active">
+      <!-- Card Escolha da Fonte -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔤 Fonte Oficial do Trabalho</span>
+        </div>
+        <div class="card-desc">Escolha a fonte oficial exigida para todo o texto do documento:</div>
+        
+        <div class="radio-cards-group">
+          <div class="radio-card selected" id="fontChoiceArial" data-font="Arial">
+            <span>Arial (Padrão Moderno)</span>
+          </div>
+          <div class="radio-card" id="fontChoiceTimes" data-font="Times New Roman">
+            <span>Times New Roman (Clássico)</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- BOTÃO HERO DE FORMATAÇÃO GERAL -->
+      <div class="hero-btn-container">
+        <button id="btnFormatFullDoc" class="btn-hero">
+          <span class="icon-sparkle">✨</span>
+          <span>Formatar Documento Inteiro (ABNT)</span>
+        </button>
+      </div>
+
+      <!-- Resumo do que o 1-Clique aplica -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📋 Parâmetros Aplicados com 1 Clique</span>
+        </div>
+        <div class="card-desc">Todas as seguintes normas são ajustadas automaticamente:</div>
+        
+        <ul style="padding-left: 18px; font-size: 11.5px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 4px;">
+          <li><strong>Margens NBR 14724:</strong> Sup. 3cm, Esq. 3cm, Inf. 2cm, Dir. 2cm.</li>
+          <li><strong>Corpo de Texto:</strong> Fonte 12pt, 1,5 entrelinhas, Justificado.</li>
+          <li><strong>Parágrafos:</strong> Recuo de 1ª linha de 1,25 cm, 0pt antes/depois.</li>
+          <li><strong>Papel:</strong> Tamanho A4 (21 x 29,7 cm), Orientação Retrato.</li>
+          <li><strong>Citações Longas:</strong> Recuo de 4,0 cm, Fonte 10pt, Simples.</li>
+          <li><strong>Referências:</strong> Alinhadas à esquerda, Espaçamento simples.</li>
+        </ul>
+
+        <div style="margin-top: 12px; display: flex; gap: 8px;">
+          <button id="btnMarginsOnly" class="btn btn-secondary">📐 Ajustar Apenas Margens</button>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- ABA 2: AUDITOR E DIAGNÓSTICO ABNT          -->
+    <!-- ========================================== -->
+    <section id="tab-auditor" class="tab-content">
+      <div class="audit-score-card">
+        <div id="auditScoreCircle" class="score-circle good">
+          <span id="auditScoreVal">85%</span>
+        </div>
+        <div class="score-info">
+          <div class="score-label">Diagnóstico ABNT</div>
+          <div id="auditScoreStatus" class="score-status">Conformidade Boa</div>
+          <div id="auditScoreDesc" class="score-desc">Pequenos ajustes necessários detectados.</div>
+        </div>
+      </div>
+
+      <!-- Grade de Métricas -->
+      <div class="audit-metrics-grid">
+        <div id="metricMargins" class="metric-badge ok">📐 Margens: 3,3,2,2</div>
+        <div id="metricFonts" class="metric-badge issue">🔤 Fontes: Misturadas</div>
+        <div id="metricSpacing" class="metric-badge issue">📏 Espaçamento 1.5</div>
+        <div id="metricIndents" class="metric-badge issue">📑 Recuo 1.25 cm</div>
+      </div>
+
+      <!-- Botão Corrigir Tudo -->
+      <div style="margin-bottom: 12px; display: flex; gap: 8px;">
+        <button id="btnFixAllIssues" class="btn btn-success">
+          <span>⚡ Corrigir Todos os Erros</span>
+        </button>
+        <button id="btnRescanAudit" class="btn btn-secondary" style="width: auto;">
+          <span>🔄</span>
+        </button>
+      </div>
+
+      <!-- Lista de Problemas Encontrados -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⚠️ Itens Detectados para Ajuste</span>
+        </div>
+        <div id="issuesListContainer" class="issues-list">
+          <!-- Gerado dinamicamente via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 3: FORMATADOR RÁPIDO DE SELEÇÃO        -->
+    <!-- ========================================== -->
+    <section id="tab-quick" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">⚡ Estilos Rápidos de Parágrafo</span>
+        </div>
+        <div class="card-desc">Selecione o parágrafo no Word e clique no estilo desejado:</div>
+
+        <div class="quick-grid">
+          <button id="btnStyleBody" class="quick-btn">
+            <span class="quick-btn-title">📄 Corpo de Texto</span>
+            <span class="quick-btn-desc">12pt, 1.5 linhas, 1.25cm, justificado</span>
+          </button>
+
+          <button id="btnStyleLongQuote" class="quick-btn">
+            <span class="quick-btn-title">❝ Citação Longa</span>
+            <span class="quick-btn-desc">Recuo 4cm, 10pt, simples, sem aspas</span>
+          </button>
+
+          <button id="btnStyleHeading1" class="quick-btn">
+            <span class="quick-btn-title">🏷️ 1 SEÇÃO PRIMÁRIA</span>
+            <span class="quick-btn-desc">12pt, Negrito, Caixa Alta</span>
+          </button>
+
+          <button id="btnStyleHeading2" class="quick-btn">
+            <span class="quick-btn-title">📑 1.1 Seção Secundária</span>
+            <span class="quick-btn-desc">12pt, Sem Negrito, Caixa Alta</span>
+          </button>
+
+          <button id="btnStyleHeading3" class="quick-btn">
+            <span class="quick-btn-title">📌 1.1.1 Seção Terciária</span>
+            <span class="quick-btn-desc">12pt, Negrito, 1ª Maiúscula</span>
+          </button>
+
+          <button id="btnStyleHeading4" class="quick-btn">
+            <span class="quick-btn-title">🔹 1.1.1.1 Quaternária</span>
+            <span class="quick-btn-desc">12pt, Normal, 1ª Maiúscula</span>
+          </button>
+
+          <button id="btnStyleCaption" class="quick-btn">
+            <span class="quick-btn-title">🖼️ Legenda Figura/Tabela</span>
+            <span class="quick-btn-desc">10pt, Centralizado, Simples</span>
+          </button>
+
+          <button id="btnStyleFootnote" class="quick-btn">
+            <span class="quick-btn-title">📝 Fonte / Nota Rodapé</span>
+            <span class="quick-btn-desc">10pt, Alinhado à Esquerda</span>
+          </button>
+
+          <button id="btnStyleReference" class="quick-btn">
+            <span class="quick-btn-title">📚 Item de Referência</span>
+            <span class="quick-btn-desc">12pt, Esquerda, Simples, 6pt espaço</span>
+          </button>
+
+          <button id="btnFixHeadingNumbers" class="quick-btn">
+            <span class="quick-btn-title">🔢 Tirar Ponto do Título</span>
+            <span class="quick-btn-desc">"1. TÍTULO" ➔ "1 TÍTULO"</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 4: CITAÇÕES & REFERÊNCIAS              -->
+    <!-- ========================================== -->
+    <section id="tab-references" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📖 Gerador NBR 10520 & NBR 6023</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="refTypeSelect">Tipo de Documento:</label>
+          <select id="refTypeSelect" class="form-select">
+            <option value="book">📘 Livro Inteiro</option>
+            <option value="article">📄 Artigo de Periódico / Revista</option>
+            <option value="academic">🎓 Tese / Dissertação / TCC</option>
+            <option value="website">🌐 Página da Internet / Website</option>
+            <option value="law">⚖️ Legislação / Lei / Decreto</option>
+          </select>
+        </div>
+
+        <!-- Campos Dinâmicos do Formulário -->
+        <div class="form-group">
+          <label class="form-label" for="inputAuthors">Autor(es):</label>
+          <input type="text" id="inputAuthors" class="form-input" placeholder="Ex: SILVA, João; SANTOS, Maria" value="SILVA, João da" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="inputTitle">Título da Obra / Artigo:</label>
+          <input type="text" id="inputTitle" class="form-input" placeholder="Título principal" value="Metodologia da Pesquisa Científica" />
+        </div>
+
+        <div class="form-group" id="fieldSubtitleContainer">
+          <label class="form-label" for="inputSubtitle">Subtítulo (opcional):</label>
+          <input type="text" id="inputSubtitle" class="form-input" placeholder="Subtítulo sem destaque" value="diretrizes e práticas" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group" id="fieldYearContainer">
+            <label class="form-label" for="inputYear">Ano:</label>
+            <input type="text" id="inputYear" class="form-input" placeholder="Ex: 2024" value="2024" />
+          </div>
+
+          <div class="form-group" id="fieldPageContainer">
+            <label class="form-label" for="inputPage">Página (para citação):</label>
+            <input type="text" id="inputPage" class="form-input" placeholder="Ex: 45" value="45" />
+          </div>
+        </div>
+
+        <!-- Campos adicionais de livro -->
+        <div id="bookExtraFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <div class="form-group">
+            <label class="form-label" for="inputCity">Cidade:</label>
+            <input type="text" id="inputCity" class="form-input" placeholder="Ex: São Paulo" value="São Paulo" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputPublisher">Editora:</label>
+            <input type="text" id="inputPublisher" class="form-input" placeholder="Ex: Atlas" value="Atlas" />
+          </div>
+        </div>
+
+        <!-- Campos adicionais de artigo de revista -->
+        <div id="articleExtraFields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="inputJournal">Nome da Revista / Periódico:</label>
+            <input type="text" id="inputJournal" class="form-input" placeholder="Ex: Revista Brasileira de Educação" />
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+            <div class="form-group">
+              <label class="form-label" for="inputVolume">Vol.:</label>
+              <input type="text" id="inputVolume" class="form-input" placeholder="v. 12" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputNumber">Nº:</label>
+              <input type="text" id="inputNumber" class="form-input" placeholder="n. 2" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputPagesRange">Págs.:</label>
+              <input type="text" id="inputPagesRange" class="form-input" placeholder="p. 10-25" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos adicionais de website -->
+        <div id="websiteExtraFields" style="display: none;">
+          <div class="form-group">
+            <label class="form-label" for="inputUrl">URL:</label>
+            <input type="text" id="inputUrl" class="form-input" placeholder="https://exemplo.com.br/artigo" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="inputAccessDate">Data de Acesso:</label>
+            <input type="text" id="inputAccessDate" class="form-input" placeholder="Ex: 20 ago. 2024" />
+          </div>
+        </div>
+
+        <!-- Prévias Geradas -->
+        <div class="preview-box">
+          <div class="preview-label">💬 Citação no Texto (NBR 10520):</div>
+          <div id="previewCitationText" style="font-weight: 600;">(SILVA, 2024, p. 45)</div>
+          <div style="margin-top: 4px; font-size: 11px; color: var(--text-muted);">
+            No texto: <span id="previewCitationInText">Silva (2024, p. 45)</span>
+          </div>
+        </div>
+
+        <div class="preview-box">
+          <div class="preview-label">📚 Referência Bibliográfica (NBR 6023):</div>
+          <div id="previewReferenceText">SILVA, João da. <strong>Metodologia da Pesquisa Científica</strong>: diretrizes e práticas. São Paulo: Atlas, 2024.</div>
+        </div>
+
+        <!-- Ações de Inserção -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
+          <button id="btnInsertCitation" class="btn btn-primary">Inserir Citação</button>
+          <button id="btnInsertReference" class="btn btn-secondary">Inserir Referência</button>
+        </div>
+      </div>
+
+      <!-- Ferramenta de Ordenação de Referências -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🔤 Ordenador Alfabético (A-Z)</span>
+        </div>
+        <div class="card-desc">Selecione suas referências no Word e ordene-as automaticamente em ordem alfabética estrita:</div>
+        <button id="btnSortReferences" class="btn btn-outline-emerald">Ordenar Referências Selecionadas (A-Z)</button>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 5: MODELOS E ESTRUTURAS                -->
+    <!-- ========================================== -->
+    <section id="tab-elements" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📑 Inserir Elementos Pré-Textuais</span>
+        </div>
+        <div class="card-desc">Insira modelos pré-formatados com a estrutura correta:</div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button class="btn btn-secondary template-insert-btn" data-template="capa">📘 Inserir Capa ABNT</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="folha_rosto">📄 Inserir Folha de Rosto (Recuo 8cm)</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="resumo">📝 Inserir Resumo & Palavras-chave</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="abstract">🌐 Inserir Abstract & Keywords</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="sumario">📋 Inserir Modelo de Sumário</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="figura">🖼️ Inserir Modelo de Figura (Topo + Base)</button>
+          <button class="btn btn-secondary template-insert-btn" data-template="tabela">📊 Inserir Modelo de Tabela (IBGE/ABNT)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 6: HIGIENIZADOR DE DOCUMENTO           -->
+    <!-- ========================================== -->
+    <section id="tab-cleaner" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">🧹 Limpeza de Digitação</span>
+        </div>
+        <div class="card-desc">Detecta e remove automaticamente erros comuns de formatação:</div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button id="btnCleanSpaces" class="btn btn-primary">Remover Espaços Duplos e Repetidos</button>
+          <button id="btnFixHeadingDotsCleaner" class="btn btn-secondary">Padronizar Numeração de Títulos</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- ABA 7: GUIA RÁPIDO DE NORMAS ABNT          -->
+    <!-- ========================================== -->
+    <section id="tab-guide" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">📖 Resumo das Normas Vigentes</span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 11.5px; color: var(--text-secondary);">
+          <div>
+            <strong>📐 Margens (NBR 14724):</strong><br />
+            • Superior: 3 cm | Esquerda: 3 cm<br />
+            • Inferior: 2 cm | Direita: 2 cm
+          </div>
+          <div>
+            <strong>🔤 Fonte & Espaçamento:</strong><br />
+            • Arial ou Times New Roman 12 pt no texto.<br />
+            • Espaçamento 1,5 entre linhas.<br />
+            • Recuo de 1,25 cm na primeira linha.<br />
+            • Alinhamento Justificado.
+          </div>
+          <div>
+            <strong>❝ Citações Diretas Longas (> 3 linhas):</strong><br />
+            • Recuo de 4,0 cm da margem esquerda.<br />
+            • Fonte tamanho 10 pt.<br />
+            • Espaçamento simples, sem aspas.
+          </div>
+          <div>
+            <strong>📚 Referências (NBR 6023):</strong><br />
+            • Alinhadas à esquerda (não justificadas).<br />
+            • Espaçamento simples entre linhas.<br />
+            • Espaço simples em branco entre cada referência.
+          </div>
+          <div>
+            <strong>🏷️ Títulos das Seções (NBR 6024):</strong><br />
+            • 1 SEÇÃO PRIMÁRIA (Negrito, Caixa Alta)<br />
+            • 1.1 SEÇÃO SECUNDÁRIA (Sem Negrito, Caixa Alta)<br />
+            • 1.1.1 Seção Terciária (Negrito, 1ª Maiúscula)<br />
+            • Sem ponto após o número (ex: "1 INTRODUÇÃO").
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Container de Mensagens Flutuantes (Toast) -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Script Principal da Aplicação -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
