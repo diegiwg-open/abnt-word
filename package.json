@@ -34,5 +34,8 @@
     "office-addin-debugging": "^6.1.2",
     "office-addin-dev-certs": "^1.9.5",
     "office-addin-manifest": "^2.1.6"
+  },
+  "overrides": {
+    "strip-bom": "4.0.0"
   }
 }
